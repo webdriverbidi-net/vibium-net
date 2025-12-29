@@ -58,6 +58,7 @@
   <ItemGroup>
     <AdditionalFiles Include=".stylecop.json" />
     <AdditionalFiles Include="Vibium.snk" />
+    <None Include="README.md" Pack="true" PackagePath="/"/>
   </ItemGroup>
 
 </Project>
