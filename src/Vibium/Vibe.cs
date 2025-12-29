@@ -7,6 +7,7 @@ namespace Vibium;
 
 using Vibium.Driver;
 using WebDriverBiDi.BrowsingContext;
+using WebDriverBiDi.Script;
 
 /// <summary>
 /// Contains methods for interacting with a browsing context.
@@ -52,6 +53,39 @@ public class Vibe
         string context = await this.GetContextAsync().ConfigureAwait(false);
         CaptureScreenshotCommandResult screenshotResult = await this.driver.BrowsingContext.CaptureScreenshotAsync(new CaptureScreenshotCommandParameters(context)).ConfigureAwait(false);
         return Convert.FromBase64String(screenshotResult.Data);
+    }
+
+    /// <summary>
+    /// Executes a JavaScript function against the current browsing context.
+    /// </summary>
+    /// <typeparam name="T">The type to which to attempt to cast the result returned from the JavaScript function.</typeparam>
+    /// <param name="functionDeclaration">A "fat arrow" function declaration describing the function. For example, "(e) => return e.tagName".</param>
+    /// <param name="args">The arguments required to execute the function.</param>
+    /// <returns>The value of the function.</returns>
+    /// <exception cref="VibiumException">Thrown when a JavaScript error occurred.</exception>
+    public async Task<T?> ExecuteAsync<T>(string functionDeclaration, params ArgumentValue[] args)
+    {
+        Target functionTarget = new ContextTarget(await this.GetContextAsync());
+        CallFunctionCommandParameters callFunctionParameters = new(functionDeclaration, functionTarget, false)
+        {
+            ResultOwnership = ResultOwnership.Root,
+        };
+        callFunctionParameters.Arguments.AddRange(args);
+        EvaluateResult result = await this.driver.Script.CallFunctionAsync(callFunctionParameters);
+        if (result is EvaluateResultException exceptionResult)
+        {
+            throw new VibiumException($"Unexpected error in executing function: {exceptionResult.ExceptionDetails.Text}");
+        }
+
+        EvaluateResultSuccess successResult = (EvaluateResultSuccess)result;
+
+        if (successResult.Result.Type == "null")
+        {
+            return default;
+        }
+
+        // We know we have a non-null result, so we can use the null-forgiving operator here.
+        return successResult.Result.ValueAs<T>()!;
     }
 
     /// <summary>
