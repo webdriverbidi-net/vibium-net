@@ -10,11 +10,19 @@ Vibe vibe = await browser.LaunchAsync(new LaunchOptions());
 try
 {
     await vibe.GoAsync("http://example.com");
-    Element link = await vibe.FindAsync("a");
-    await link.ClickAsync();
-    Element destinationLink = await vibe.FindAsync("h2");
+    Console.WriteLine("Loaded example.com");
+
     byte[] screenshot = await vibe.ScreenshotAsync();
-    File.WriteAllBytes("/Users/james.evans/Desktop/example.png", screenshot);
+    File.WriteAllBytes("example.png", screenshot);
+    Console.WriteLine("Saved screenshot");
+
+    Element link = await vibe.FindAsync("a");
+    Console.WriteLine($"Found link with text {await link.GetTextAsync()}");
+    await link.ClickAsync();
+    Console.WriteLine("Link clicked");
+
+    Element destinationLink = await vibe.FindAsync("h1");
+    Console.WriteLine($"Found text on destination page: {await destinationLink.GetTextAsync()}");
 }
 finally
 {

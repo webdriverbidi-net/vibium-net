@@ -6,6 +6,7 @@
 namespace Vibium;
 
 using Vibium.Driver;
+using WebDriverBiDi.Script;
 
 /// <summary>
 /// Contains methods for interacting with an element.
@@ -63,5 +64,41 @@ public class Element
         }
 
         await this.driver.Vibium.TypeAsync(typeParameters).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the text of the element.
+    /// </summary>
+    /// <returns>The text of the element.</returns>
+    /// <exception cref="VibiumException">Thrown when there is an error retrieving the element text.</exception>
+    public async Task<string> GetTextAsync()
+    {
+        string functionDeclaration = """
+                                     (selector) => {
+                                       const el = document.querySelector(selector);
+                                       return el ? (el.textContent || '').trim() : null;
+                                     }
+                                     """;
+        Target functionTarget = new ContextTarget(this.browsingContextId);
+        CallFunctionCommandParameters callFunctionParameters = new(functionDeclaration, functionTarget, false)
+        {
+            ResultOwnership = ResultOwnership.Root,
+        };
+        callFunctionParameters.Arguments.Add(LocalValue.String(this.selector));
+        EvaluateResult result = await this.driver.Script.CallFunctionAsync(callFunctionParameters);
+        if (result is EvaluateResultException exceptionResult)
+        {
+            throw new VibiumException($"Unexpected error in executing function: {exceptionResult.ExceptionDetails.Text}");
+        }
+
+        EvaluateResultSuccess successResult = (EvaluateResultSuccess)result;
+
+        if (successResult.Result.Type == "null")
+        {
+            throw new VibiumException($"Element not found with selector {this.selector}");
+        }
+
+        // We know we have a non-null result, so we can use the null-forgiving operator here.
+        return successResult.Result.ValueAs<string>()!;
     }
 }
