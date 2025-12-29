@@ -1,0 +1,17 @@
+{
+    "dotnet.defaultSolution": "Vibium.NET.sln",
+    "cSpell.ignorePaths": [
+        "third_party/**",
+        ".vscode/**"
+    ],
+    "cSpell.words": [
+        "buildtransitive",
+        "contentfiles",
+        "libc",
+        "netstandard",
+        "Newtonsoft",
+        "snupkg",
+        "stylecop",
+        "Vibium"
+    ]
+}
