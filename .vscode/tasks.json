@@ -18,7 +18,7 @@
             "command": "dotnet",
             "args": [
                 "test",
-                "${workspaceFolder}/test/WebDriverBidi.Tests"
+                "${workspaceFolder}/test/Vibium.Tests"
             ],
             "problemMatcher": "$msCompile",
             "group": {
