@@ -121,7 +121,8 @@ public class Element
         {
             ResultOwnership = ResultOwnership.Root,
         };
-        callFunctionParameters.Arguments.AddRange(LocalValue.String(this.selector), LocalValue.String(attributeName));
+        callFunctionParameters.Arguments.Add(LocalValue.String(this.selector));
+        callFunctionParameters.Arguments.Add(LocalValue.String(attributeName));
         EvaluateResult result = await this.driver.Script.CallFunctionAsync(callFunctionParameters);
         if (result is EvaluateResultException exceptionResult)
         {
