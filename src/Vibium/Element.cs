@@ -101,4 +101,41 @@ public class Element
         // We know we have a non-null result, so we can use the null-forgiving operator here.
         return successResult.Result.ValueAs<string>()!;
     }
+
+    /// <summary>
+    /// Gets the value of an attribute of the element.
+    /// </summary>
+    /// <param name="attributeName">The name of the attribute whose value to get.</param>
+    /// <returns>The value of the attribute, or <see langword="null"/> if the element or attribute does not exist.</returns>
+    /// <exception cref="VibiumException">Thrown when there is an error retrieving the element text.</exception>
+    public async Task<string?> GetAttributeAsync(string attributeName)
+    {
+        string functionDeclaration = """
+                                     (selector, attrName) => {
+                                       const el = document.querySelector(selector);
+                                       return el ? el.getAttribute(attrName) : null;
+                                     }
+                                     """;
+        Target functionTarget = new ContextTarget(this.browsingContextId);
+        CallFunctionCommandParameters callFunctionParameters = new(functionDeclaration, functionTarget, false)
+        {
+            ResultOwnership = ResultOwnership.Root,
+        };
+        callFunctionParameters.Arguments.AddRange(LocalValue.String(this.selector), LocalValue.String(attributeName));
+        EvaluateResult result = await this.driver.Script.CallFunctionAsync(callFunctionParameters);
+        if (result is EvaluateResultException exceptionResult)
+        {
+            throw new VibiumException($"Unexpected error in executing function: {exceptionResult.ExceptionDetails.Text}");
+        }
+
+        EvaluateResultSuccess successResult = (EvaluateResultSuccess)result;
+
+        if (successResult.Result.Type == "null")
+        {
+            return null;
+        }
+
+        // We know we have a non-null result, so we can use the null-forgiving operator here.
+        return successResult.Result.ValueAs<string>()!;
+    }
 }
