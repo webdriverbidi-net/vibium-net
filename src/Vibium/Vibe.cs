@@ -41,7 +41,16 @@ public class Vibe
         {
             Wait = ReadinessState.Complete,
         };
-        await this.driver.BrowsingContext.NavigateAsync(navigateParameters).ConfigureAwait(false);
+
+        try
+        {
+            await this.driver.BrowsingContext.NavigateAsync(navigateParameters).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // Unhandled exceptions can occur on navigation for some sites, don't kill the browser but log that an exception did occur and attempt to continue.
+            Console.WriteLine(ex.ToString());
+        }
     }
 
     /// <summary>
